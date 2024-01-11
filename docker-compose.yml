@@ -1,0 +1,19 @@
+version: '3'
+services:
+  react-app:
+    image: the-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    # depends_on:
+    #   - api  # Add this line if you have an API service
+
+  # Add an API service if your app depends on an API
+  # api:
+  #   image: your-api-image-name
+  #   ports:
+  #     - "4000:4000"
