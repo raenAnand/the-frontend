@@ -1,46 +1,37 @@
-// src/components/Login/Login.js
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Import useHistory
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify'; // Import react-toastify
 import 'react-toastify/dist/ReactToastify.css'; // Import the styles
 import './Login.css';
+import { LOGIN_API } from '../../Constents';
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  const navigate = useNavigate(); // Initialize useHistory
+
   const handleLogin = async () => {
     try {
-      // Validate textfield values
       if (!username || !password) {
         toast.error("Username and password are required.");
         return;
       }
 
-      // Call API for authentication using Axios
-      const response = await axios.post('your_auth_api_endpoint', {
+      const response = await axios.post(LOGIN_API, {
         username,
         password,
       });
 
-      // Check if API call is successful
       if (response.status === 200) {
-        // Parse the response to get the access token
-        const accessToken = response.data.access_token;
-
-        // Save access token (you might want to use a secure storage mechanism)
+        const accessToken = response.data.access;
         localStorage.setItem('access_token', accessToken);
-
-        // Call the onLogin callback to update the state in the parent component
         onLogin();
-
-        // Show success message using toast
         toast.success("Login successful!");
-
-        
+        // Call the navigate function to redirect
+        navigate('/items');
       } else {
-        // On API failure, handle error
         toast.error(response.data.message || 'Login failed.');
       }
     } catch (error) {

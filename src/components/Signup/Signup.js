@@ -1,19 +1,26 @@
-// src/components/Signup/Signup.js
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import axios
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './Signup.css';
+import { REGISTER_API } from '../../Constents';
 
 const Signup = () => {
+  const [firstname, setFirstname] = useState('');
+  const [lastname, setLastname] = useState('');
+  const [email, setEmail] = useState('');
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const navigate = useNavigate(); // Initialize useHistory
+
 
   const handleSignup = async () => {
     try {
       // Validate textfield values
-      if (!username || !password || !confirmPassword) {
+      if (!firstname || !lastname || !username || !password || !confirmPassword) {
         toast.error("All fields are required.");
         return;
       }
@@ -23,31 +30,34 @@ const Signup = () => {
         return;
       }
 
-      // Call API for signup
-      // Replace 'your_signup_api_endpoint' with your actual signup API endpoint
-      // Replace the payload structure according to your API requirements
-      const response = await fetch('your_signup_api_endpoint', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
-      });
+      const FormData = require('form-data');
+      let data = new FormData();
+      data.append('username', username);
+      data.append('password', password);
+      data.append('password2', confirmPassword);
+      data.append('email', email);
+      data.append('first_name', firstname);
+      data.append('last_name', lastname);
 
-      // Check if API call is successful
-      if (response.ok) {
-        // Show success message using toast
-        toast.success("Registration successful!");
 
-        // Move to Login screen (You might want to use react-router or other navigation methods)
-      } else {
-        // On API failure, handle error
-        const errorData = await response.json();
-        toast.error(errorData.message || 'Registration failed.');
-      }
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: REGISTER_API,
+        data: data
+      };
+
+      axios.request(config)
+        .then((response) => {
+          toast.success("Registration successful!");
+          navigate('/login');
+
+        })
+        .catch((error) => {
+          console.log(error)
+          toast.error( JSON.stringify(error.response.data));
+        });
+      
     } catch (error) {
       console.error('Signup error:', error);
       toast.error('An unexpected error occurred.');
@@ -60,6 +70,18 @@ const Signup = () => {
         <Link to="/login" className="back-link">&#8592; Back to Login</Link>
         <h2>Signup</h2>
         <form className="signup-form">
+          <label>
+            First Name:
+            <input type="text" value={firstname} onChange={(e) => setFirstname(e.target.value)} />
+          </label>
+          <label>
+            Last Name:
+            <input type="text" value={lastname} onChange={(e) => setLastname(e.target.value)} />
+          </label>
+          <label>
+            Email:
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </label>
           <label>
             Username:
             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />

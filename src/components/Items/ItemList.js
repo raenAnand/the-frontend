@@ -4,6 +4,7 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './ItemList.css'; // Import the CSS file for styling
+import { ITEM_LIST_API, TOTAL_PRICE } from '../../Constents';
 
 const ItemList = () => {
   const [itemListData, setItemListData] = useState([]);
@@ -11,47 +12,23 @@ const ItemList = () => {
   const [showItemList, setShowItemList] = useState(true);
   const [showNewBox, setShowNewBox] = useState(false);
   const [newBoxData, setNewBoxData] = useState(null);
+  const authToken = localStorage.getItem('access_token');
+
 
   useEffect(() => {
     // Fetch data from the API
     const fetchData = async () => {
       try {
-        // TODO: const response = await axios.get('your_api_endpoint'); // Replace with your API endpoint
-        // Temporary data for demonstration purposes
-        const data =
-          [
-            {
-              "id": "a44slkdf1alksjdf",
-              "item": "apple",
-              "price": 12.5,
-              "description": "A crisp, juicy, and delicious red apple."
-            },
-            {
-              "id": "b56fjh345hkjsad",
-              "item": "banana",
-              "price": 0.99,
-              "description": "A bright yellow banana, perfect for snacking or smoothies."
-            },
-            {
-              "id": "c78opw980dfjkl",
-              "item": "orange",
-              "price": 1.50,
-              "description": "A juicy, sweet orange with a vibrant citrus flavor."
-            },
-            {
-              "id": "d90asdfh2345lkj",
-              "item": "grapes",
-              "price": 4.99,
-              "description": "A bunch of fresh, green grapes, ideal for snacking or salads."
-            },
-            {
-              "id": "e02zxcv98765mnb",
-              "item": "strawberries",
-              "price": 5.99,
-              "description": "Sweet, juicy strawberries, perfect for desserts or eating fresh."
-            }
-          ];
-        setItemListData(data);
+
+        const response = await axios.get(ITEM_LIST_API, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+    
+        // Replace the below line with the actual data from your API response
+        const data = response.data.result;
+        setItemListData(response.data['results']);
       } catch (error) {
         console.error('API Error:', error);
         toast.error('Failed to fetch item data from the API.');
@@ -83,27 +60,26 @@ const ItemList = () => {
 
     // Filter the selected items from the data
     const selectedItemsData = itemListData
-      .filter((item) => selectedItems.includes(item.id))
-      .map((item, index) => ({
-        serialNumber: index + 1,
-        id: item.id,
-        item: item.item,
-        price: item.price,
-        description: item.description,
-      }));
+    .filter((item) => selectedItems.includes(item.id))
+    .map((item) => (item.id));
+
+    console.log()
 
     try {
-
-      //  TODO: erf
-      // Example: Send a POST request to an API endpoint with selectedItemsData using Axios
-      // const response = await axios.post('your_api_endpoint', {
-      //   selectedItems: selectedItemsData,
-      // });
+      console.log(selectedItemsData)
+      const headers = {
+        Authorization: `Bearer ${authToken}`,
+      };
+  
+      // Make the axios.post request with the authentication token in the headers
+      const response = await axios.post(TOTAL_PRICE, 
+       {items: selectedItemsData}
+      , { headers });
 
       // Check if API call is successful
       if (true) {
         toast.success('Selected items sent successfully!');
-        setNewBoxData("total price : 10212"); // Assuming the response contains data for the new box
+        setNewBoxData("total price: "+ response.data['total_price']); // Assuming the response contains data for the new box
         setShowItemList(false);
         setShowNewBox(true);
       } else {
@@ -148,8 +124,8 @@ const ItemList = () => {
                       onChange={() => handleCheckboxChange(item.id)}
                     />
                   </td>
-                  <td>{index + 1}</td>
-                  <td>{item.item}</td>
+                  <td>{item.id}</td>
+                  <td>{item.name}</td>
                   <td>${item.price.toFixed(2)}</td>
                   <td>{item.description}</td>
                 </tr>
@@ -164,12 +140,11 @@ const ItemList = () => {
 
       {showNewBox && (
         <div className="item-list-container">
-          <h2 className="fancy-title">New Fancy Box</h2>
+          <h2 className="fancy-title">Selected Item Summary</h2>
           {/* Display content from the API response in the new box */}
           {newBoxData && (
             <div>
               {/* Example: Display response data in the new box */}
-              <p>Data from API:</p>
               <pre>{JSON.stringify(newBoxData, null, 2)}</pre>
             </div>
           )}
